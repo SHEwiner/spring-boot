@@ -124,7 +124,6 @@ class WebEndpointTestInvocationContextProvider implements TestTemplateInvocation
 		context.register(ClassUtils.toClassArray(classes));
 		context.refresh();
 		return context;
-
 	}
 
 	static class WebEndpointsInvocationContext
@@ -153,7 +152,7 @@ class WebEndpointTestInvocationContextProvider implements TestTemplateInvocation
 		}
 
 		private boolean isConfiguration(Class<?> candidate) {
-			return MergedAnnotations.from(candidate, SearchStrategy.EXHAUSTIVE).isPresent(Configuration.class);
+			return MergedAnnotations.from(candidate, SearchStrategy.TYPE_HIERARCHY).isPresent(Configuration.class);
 		}
 
 		@Override

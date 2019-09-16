@@ -65,6 +65,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.StringUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 /**
  * Tests for {@link ConfigFileApplicationListener}.
@@ -305,8 +306,8 @@ class ConfigFileApplicationListenerTests {
 
 	@Test
 	void defaultPropertyAsFallback() {
-		this.environment.getPropertySources().addLast(
-				new MapPropertySource("defaultProperties", Collections.singletonMap("my.fallback", (Object) "foo")));
+		this.environment.getPropertySources()
+				.addLast(new MapPropertySource("defaultProperties", Collections.singletonMap("my.fallback", "foo")));
 		this.initializer.postProcessEnvironment(this.environment, this.application);
 		String property = this.environment.getProperty("my.fallback");
 		assertThat(property).isEqualTo("foo");
@@ -315,7 +316,7 @@ class ConfigFileApplicationListenerTests {
 	@Test
 	void defaultPropertyAsFallbackDuringFileParsing() {
 		this.environment.getPropertySources().addLast(new MapPropertySource("defaultProperties",
-				Collections.singletonMap("spring.config.name", (Object) "testproperties")));
+				Collections.singletonMap("spring.config.name", "testproperties")));
 		this.initializer.postProcessEnvironment(this.environment, this.application);
 		String property = this.environment.getProperty("the.property");
 		assertThat(property).isEqualTo("frompropertiesfile");
@@ -979,6 +980,25 @@ class ConfigFileApplicationListenerTests {
 		this.initializer.postProcessEnvironment(this.environment, this.application);
 		assertThat(this.environment.getProperty("mapkey")).isEqualTo("mapvalue");
 		assertThat(this.environment.getProperty("gh17001loaded")).isEqualTo("true");
+	}
+
+	@Test
+	void whenConfigLocationSpecifiesUnknownFileExtensionConfigFileProcessingFailsFast() {
+		String location = "classpath:application.unknown";
+		TestPropertySourceUtils.addInlinedPropertiesToEnvironment(this.environment,
+				"spring.config.location=" + location);
+		assertThatIllegalStateException()
+				.isThrownBy(() -> this.initializer.postProcessEnvironment(this.environment, this.application))
+				.withMessageContaining(location)
+				.withMessageContaining("If the location is meant to reference a directory, it must end in '/'");
+	}
+
+	@Test
+	void whenConfigLocationSpecifiesFolderConfigFileProcessingContinues() {
+		String location = "classpath:application.unknown/";
+		TestPropertySourceUtils.addInlinedPropertiesToEnvironment(this.environment,
+				"spring.config.location=" + location);
+		this.initializer.postProcessEnvironment(this.environment, this.application);
 	}
 
 	private Condition<ConfigurableEnvironment> matchingPropertySource(final String sourceName) {

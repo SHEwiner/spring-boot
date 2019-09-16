@@ -61,6 +61,8 @@ import org.springframework.util.unit.DataSize;
  * @author Artsiom Yudovin
  * @author Andrew McGhie
  * @author Rafiullah Hamedy
+ * @author Dirk Deyne
+ * @author HaiTao Zhang
  * @since 1.0.0
  */
 @ConfigurationProperties(prefix = "server", ignoreUnknownFields = true)
@@ -396,6 +398,18 @@ public class ServerProperties {
 		private List<String> additionalTldSkipPatterns = new ArrayList<>();
 
 		/**
+		 * Comma-separated list of additional unencoded characters that should be allowed
+		 * in URI paths. Only "< > [ \ ] ^ ` { | }" are allowed.
+		 */
+		private List<Character> relaxedPathChars = new ArrayList<>();
+
+		/**
+		 * Comma-separated list of additional unencoded characters that should be allowed
+		 * in URI query strings. Only "< > [ \ ] ^ ` { | }" are allowed.
+		 */
+		private List<Character> relaxedQueryChars = new ArrayList<>();
+
+		/**
 		 * Static resource configuration.
 		 */
 		private final Resource resource = new Resource();
@@ -551,6 +565,22 @@ public class ServerProperties {
 
 		public void setAdditionalTldSkipPatterns(List<String> additionalTldSkipPatterns) {
 			this.additionalTldSkipPatterns = additionalTldSkipPatterns;
+		}
+
+		public List<Character> getRelaxedPathChars() {
+			return this.relaxedPathChars;
+		}
+
+		public void setRelaxedPathChars(List<Character> relaxedPathChars) {
+			this.relaxedPathChars = relaxedPathChars;
+		}
+
+		public List<Character> getRelaxedQueryChars() {
+			return this.relaxedQueryChars;
+		}
+
+		public void setRelaxedQueryChars(List<Character> relaxedQueryChars) {
+			this.relaxedQueryChars = relaxedQueryChars;
 		}
 
 		public Resource getResource() {
@@ -876,6 +906,21 @@ public class ServerProperties {
 		 */
 		private Integer selectors = -1;
 
+		/**
+		 * Maximum number of threads.
+		 */
+		private Integer maxThreads = 200;
+
+		/**
+		 * Minimum number of threads.
+		 */
+		private Integer minThreads = 8;
+
+		/**
+		 * Maximum thread idle time.
+		 */
+		private Duration idleTimeout = Duration.ofMillis(60000);
+
 		public Accesslog getAccesslog() {
 			return this.accesslog;
 		}
@@ -902,6 +947,30 @@ public class ServerProperties {
 
 		public void setSelectors(Integer selectors) {
 			this.selectors = selectors;
+		}
+
+		public void setMinThreads(Integer minThreads) {
+			this.minThreads = minThreads;
+		}
+
+		public Integer getMinThreads() {
+			return this.minThreads;
+		}
+
+		public void setMaxThreads(Integer maxThreads) {
+			this.maxThreads = maxThreads;
+		}
+
+		public Integer getMaxThreads() {
+			return this.maxThreads;
+		}
+
+		public void setIdleTimeout(Duration idleTimeout) {
+			this.idleTimeout = idleTimeout;
+		}
+
+		public Duration getIdleTimeout() {
+			return this.idleTimeout;
 		}
 
 		/**

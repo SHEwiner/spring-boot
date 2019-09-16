@@ -161,7 +161,8 @@ final class ModifiedClassPathClassLoader extends URLClassLoader {
 	}
 
 	private static URL[] processUrls(URL[] urls, Class<?> testClass) {
-		MergedAnnotations annotations = MergedAnnotations.from(testClass, MergedAnnotations.SearchStrategy.EXHAUSTIVE);
+		MergedAnnotations annotations = MergedAnnotations.from(testClass,
+				MergedAnnotations.SearchStrategy.TYPE_HIERARCHY);
 		ClassPathEntryFilter filter = new ClassPathEntryFilter(annotations.get(ClassPathExclusions.class));
 		List<URL> processedUrls = new ArrayList<>();
 		List<URL> additionalUrls = getAdditionalUrls(annotations.get(ClassPathOverrides.class));
@@ -204,7 +205,6 @@ final class ModifiedClassPathClassLoader extends URLClassLoader {
 		}
 		catch (Exception ignored) {
 			return Collections.emptyList();
-
 		}
 	}
 

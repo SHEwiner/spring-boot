@@ -131,8 +131,7 @@ public class ConfigurationPropertiesReportEndpoint implements ApplicationContext
 
 	private Map<String, Object> getConfigurationPropertiesBeans(ApplicationContext context,
 			ConfigurationBeanFactoryMetadata beanFactoryMetadata) {
-		Map<String, Object> beans = new HashMap<>();
-		beans.putAll(context.getBeansWithAnnotation(ConfigurationProperties.class));
+		Map<String, Object> beans = new HashMap<>(context.getBeansWithAnnotation(ConfigurationProperties.class));
 		if (beanFactoryMetadata != null) {
 			beans.putAll(beanFactoryMetadata.getBeansWithFactoryAnnotation(ConfigurationProperties.class));
 		}
@@ -166,6 +165,7 @@ public class ConfigurationPropertiesReportEndpoint implements ApplicationContext
 	protected void configureObjectMapper(ObjectMapper mapper) {
 		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 		mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+		mapper.configure(SerializationFeature.WRITE_DURATIONS_AS_TIMESTAMPS, false);
 		mapper.configure(MapperFeature.USE_STD_BEAN_NAMING, true);
 		mapper.setSerializationInclusion(Include.NON_NULL);
 		applyConfigurationPropertiesFilter(mapper);
