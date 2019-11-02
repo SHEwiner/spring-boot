@@ -1112,6 +1112,8 @@ For example, consider binding the following properties to a `Map`:
 
 The properties above will bind to a `Map` with `/key1`, `/key2` and `key3` as the keys in the map.
 
+NOTE: For YAML files, the brackets need to be surrounded by quotes for the keys to be parsed properly.
+
 
 [[boot-features-external-config-complex-type-merge]]
 ==== Merging Complex Types
@@ -1326,8 +1328,7 @@ To do so, ensure that a compliant JSR-303 implementation is on your classpath an
 
 TIP: You can also trigger validation by annotating the `@Bean` method that creates the configuration properties with `@Validated`.
 
-Although nested properties will also be validated when bound, it's good practice to also annotate the associated field as `@Valid`.
-This ensures that validation is triggered even if no nested properties are found.
+To ensure that validation is always triggered for nested properties, even when no properties are found, the associated field must be annotated with `@Valid`.
 The following example builds on the preceding `AcmeProperties` example:
 
 [source,java,indent=0]
@@ -2537,8 +2538,9 @@ If you want to take complete control of Spring WebFlux, you can add your own `@C
 Spring WebFlux uses the `HttpMessageReader` and `HttpMessageWriter` interfaces to convert HTTP requests and responses.
 They are configured with `CodecConfigurer` to have sensible defaults by looking at the libraries available in your classpath.
 
-Spring Boot applies further customization by using `CodecCustomizer` instances.
-For example, `spring.jackson.*` configuration keys are applied to the Jackson codec.
+Spring Boot provides dedicated configuration properties for codecs, `+spring.codec.*+`.
+It also applies further customization by using `CodecCustomizer` instances.
+For example, `+spring.jackson.*+` configuration keys are applied to the Jackson codec.
 
 If you need to add or customize codecs, you can create a custom `CodecCustomizer` component, as shown in the following example:
 
@@ -2553,7 +2555,7 @@ If you need to add or customize codecs, you can create a custom `CodecCustomizer
 		public CodecCustomizer myCodecCustomizer() {
 			return codecConfigurer -> {
 				// ...
-			}
+			};
 		}
 
 	}
@@ -3064,7 +3066,7 @@ You can provide a different `AuthenticationEventPublisher` by adding a bean for 
 === MVC Security
 The default security configuration is implemented in `SecurityAutoConfiguration` and `UserDetailsServiceAutoConfiguration`.
 `SecurityAutoConfiguration` imports `SpringBootWebSecurityConfiguration` for web security and `UserDetailsServiceAutoConfiguration` configures authentication, which is also relevant in non-web applications.
-To switch off the default web application security configuration completely, you can add a bean of type `WebSecurityConfigurerAdapter` (doing so does not disable the `UserDetailsService` configuration or Actuator's security).
+To switch off the default web application security configuration completely or to combine multiple Spring Security components such as OAuth 2 Client and Resource Server, add a bean of type `WebSecurityConfigurerAdapter` (doing so does not disable the `UserDetailsService` configuration or Actuator's security).
 
 To also switch off the `UserDetailsService` configuration, you can add a bean of type `UserDetailsService`, `AuthenticationProvider`, or `AuthenticationManager`.
 
@@ -3084,7 +3086,7 @@ To switch off the default web application security configuration completely, you
 
 To also switch off the `UserDetailsService` configuration, you can add a bean of type `ReactiveUserDetailsService` or `ReactiveAuthenticationManager`.
 
-Access rules can be configured by adding a custom `SecurityWebFilterChain`.
+Access rules and the use of multiple Spring Security components such as OAuth 2 Client and Resource Server can be configured by adding a custom `SecurityWebFilterChain` bean.
 Spring Boot provides convenience methods that can be used to override access rules for actuator endpoints and static resources.
 `EndpointRequest` can be used to create a `ServerWebExchangeMatcher` that is based on the configprop:management.endpoints.web.base-path[] property.
 
@@ -3120,7 +3122,7 @@ You can register multiple OAuth2 clients and providers under the `spring.securit
 	spring.security.oauth2.client.registration.my-client-1.client-name=Client for user scope
 	spring.security.oauth2.client.registration.my-client-1.provider=my-oauth-provider
 	spring.security.oauth2.client.registration.my-client-1.scope=user
-	spring.security.oauth2.client.registration.my-client-1.redirect-uri-template=https://my-redirect-uri.com
+	spring.security.oauth2.client.registration.my-client-1.redirect-uri=https://my-redirect-uri.com
 	spring.security.oauth2.client.registration.my-client-1.client-authentication-method=basic
 	spring.security.oauth2.client.registration.my-client-1.authorization-grant-type=authorization_code
 
@@ -3129,7 +3131,7 @@ You can register multiple OAuth2 clients and providers under the `spring.securit
 	spring.security.oauth2.client.registration.my-client-2.client-name=Client for email scope
 	spring.security.oauth2.client.registration.my-client-2.provider=my-oauth-provider
 	spring.security.oauth2.client.registration.my-client-2.scope=email
-	spring.security.oauth2.client.registration.my-client-2.redirect-uri-template=https://my-redirect-uri.com
+	spring.security.oauth2.client.registration.my-client-2.redirect-uri=https://my-redirect-uri.com
 	spring.security.oauth2.client.registration.my-client-2.client-authentication-method=basic
 	spring.security.oauth2.client.registration.my-client-2.authorization-grant-type=authorization_code
 
@@ -5920,7 +5922,7 @@ The annotation works by <<boot-features-testing-spring-boot-applications-detecti
 In addition to `@SpringBootTest` a number of other annotations are also provided for <<boot-features-testing-spring-boot-applications-testing-autoconfigured-tests,testing more specific slices>> of an application.
 
 TIP: If you are using JUnit 4, don't forget to also add `@RunWith(SpringRunner.class)` to your test, otherwise the annotations will be ignored.
-If you are using JUnit 5, there's no need to add the equivalent `@RunWith(SpringExtension.class)` as `@SpringBootTest` and the other `@…Test` annotations are already annotated with it.
+If you are using JUnit 5, there's no need to add the equivalent `@ExtendWith(SpringExtension.class)` as `@SpringBootTest` and the other `@…Test` annotations are already annotated with it.
 
 By default, `@SpringBootTest` will not start a server.
 You can use the `webEnvironment` attribute of `@SpringBootTest` to further refine how your tests run:
@@ -6315,7 +6317,7 @@ The following example uses `MockMvc`:
 
 TIP: If you need to configure elements of the auto-configuration (for example, when servlet filters should be applied) you can use attributes in the `@AutoConfigureMockMvc` annotation.
 
-If you use HtmlUnit or Selenium, auto-configuration also provides an HTMLUnit `WebClient` bean and/or a `WebDriver` bean.
+If you use HtmlUnit or Selenium, auto-configuration also provides an HtmlUnit `WebClient` bean and/or a Selenium `WebDriver` bean.
 The following example uses HtmlUnit:
 
 [source,java,indent=0]
@@ -6840,7 +6842,7 @@ The following example shows a `RestDocumentationResultHandler` being defined:
 
 [source,java,indent=0]
 ----
-	@TestConfiguration
+	@TestConfiguration(proxyBeanMethods = false)
 	static class ResultHandlerConfiguration {
 
 		@Bean
