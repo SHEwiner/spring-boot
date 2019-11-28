@@ -124,8 +124,9 @@ public class RabbitAutoConfiguration {
 			map.from(properties::determineVirtualHost).whenNonNull().to(factory::setVirtualHost);
 			map.from(properties::getRequestedHeartbeat).whenNonNull().asInt(Duration::getSeconds)
 					.to(factory::setRequestedHeartbeat);
+			map.from(properties::getRequestedChannelMax).to(factory::setRequestedChannelMax);
 			RabbitProperties.Ssl ssl = properties.getSsl();
-			if (ssl.isEnabled()) {
+			if (ssl.determineEnabled()) {
 				factory.setUseSSL(true);
 				map.from(ssl::getAlgorithm).whenNonNull().to(factory::setSslAlgorithm);
 				map.from(ssl::getKeyStoreType).to(factory::setKeyStoreType);
